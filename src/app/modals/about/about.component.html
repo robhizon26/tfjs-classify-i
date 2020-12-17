@@ -1,0 +1,98 @@
+<ion-header translucent="true" mode="ios">
+  <ion-toolbar>
+    <ion-title>About this app</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="onClose()">Close</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content fullscreen class="ion-padding">
+  <ion-text color="medium">
+    <h5>This mobile app is made from Ionic that can test out graph or keras model files without modifying anything on the
+      code. Just copy the model files in the particular path in the code, run and compile it in Android studio (or XCode if you compile this for iOS) and you will be able to test it out on your mobile device.</h5>
+  </ion-text>
+  <ion-text color="medium">
+    <h5>Ionic is a mobile development technology that can maintain one codebase for a project that is applicable on both Android and iOS. TFJS (Tensorflow for Javascript) is very much compatible with this technology because it is made for Javascript coding.</h5>
+  </ion-text>
+  <ion-text color="medium">
+    <h5>The app name 'TFJS Classify I' means TFJS-Tensorflow JS(Javascript); Classify-Image Classifiction, which is a
+      type of deep learning application on AI; I-Ionic.</h5>
+  </ion-text>
+  <ion-text color="medium">
+    <h5>The camera view used on this app is not directly from native camera of the device but from the video that is fed to the HTMLVideoElement from the native camera.</h5>
+  </ion-text>
+  <ion-text color="medium">
+    <h5>If you want to know more about the details of this app, such as to what path should the model files be
+      copied, you could go <ion-text color="primary"><a href="https://myportfolio-061919.s3.us-east-2.amazonaws.com/UnderConstruction.html">here</a>.</ion-text></h5>
+  </ion-text>
+  <ion-text color="medium">
+    <h5>If you want to generate graph or keras model files, I made a simple script for Google colab to makes these files
+      <ion-text color="primary"><a
+          href="https://myportfolio-061919.s3.us-east-2.amazonaws.com/UnderConstruction.html">here</a></ion-text> and
+      the blog <ion-text color="primary"><a
+          href="https://myportfolio-061919.s3.us-east-2.amazonaws.com/UnderConstruction.html">here</a></ion-text>. It
+      will generate these model files (binary weight and model.json files) plus a labels.txt file in your Google Drive.</h5>
+  </ion-text>
+  <ion-text color="medium">
+    <h5>The app already contains several of the model files I created found in that particular path. You could also see these
+      on the model list menu in the app. If you have your own model please make sure it is a graph or keras model. Also,
+      please add labels.txt into it. Follow the procedure on the description blog on how to create labels.txt.</h5>
+  </ion-text>
+  <ion-text color="medium">
+    <h5>If you want to test out .tflite models very easily without coding then you may try my expanded version of TFL
+      Classify Android app <ion-text color="primary"><a
+        href="https://myportfolio-061919.s3.us-east-2.amazonaws.com/UnderConstruction.html">here</a></ion-text>.</h5>
+  </ion-text>
+  <br *ngIf="model">
+  <ion-card *ngIf="model">
+    <ion-item>
+      <ion-card-header style="padding:10px 0;">
+        <ion-card-title>Model Detected</ion-card-title>
+        <ion-card-subtitle>gives info on the model loaded to this app</ion-card-subtitle>
+      </ion-card-header>
+    </ion-item>
+    <ion-card-content>
+      <ion-text color="dark">
+        <ion-item>
+          <ion-label>Path name:</ion-label>
+          <ion-label>{{model.name}}</ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-label>Format:</ion-label>
+          <ion-label>{{model.info.format}}</ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-label>Version:</ion-label>
+          <ion-label>{{model.info.version}}</ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-label>Dimension:</ion-label>
+          <ion-label>{{model.info.dim}}</ion-label>
+        </ion-item>
+      </ion-text>
+    </ion-card-content>
+  </ion-card>
+  <br *ngIf="videoDim">
+  <ion-card *ngIf="videoDim">
+    <ion-item>
+      <h3>HTMLVideoElement Dimension</h3>
+    </ion-item>
+    <ion-item>
+      <ion-label>w: {{videoDim[0]}}</ion-label>
+      <ion-label>h: {{videoDim[1]}}</ion-label>
+    </ion-item>
+  </ion-card>
+  <br>
+  <ion-card>
+    <ion-card-content  class="ion-text-center">
+      <form action="https://www.paypal.com/donate" method="post" target="_top">
+        <input type="hidden" name="cmd" value="_donations" />
+        <input type="hidden" name="business" value="49V38B35ARHB6" />
+        <input type="hidden" name="currency_code" value="USD" />
+        <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif" border="0" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button" />
+        <img alt="" border="0" src="https://www.paypal.com/en_US/i/scr/pixel.gif" width="1" height="1" />
+        <h6>Consider donating to Paypal <ion-icon  name="logo-paypal"></ion-icon> if you appreciate the effort on creating this app</h6>
+      </form>
+    </ion-card-content>
+  </ion-card>
+</ion-content>

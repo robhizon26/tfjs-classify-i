@@ -1,0 +1,16 @@
+<ion-header translucent="true" mode="ios">
+  <ion-toolbar>
+    <ion-title>Classes</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="onClose()">Close</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content fullscreen>
+  <ion-item>
+    <ion-input (ionChange)="onChange($event.target.value)" placeholder="Search" clear-input="true"></ion-input>
+  </ion-item>
+  <ion-list>
+    <ion-item *ngFor="let label of fLabels">{{label}}</ion-item>
+  </ion-list>
+</ion-content>

@@ -1,0 +1,30 @@
+<ion-header translucent="true" mode="ios">
+  <ion-toolbar>
+    <ion-title>Settings</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="onClose()">Close</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content fullscreen>
+  <ion-list>
+    <ion-list-header>Number of predictions: {{predictionCnt}}</ion-list-header>
+    <ion-item>
+      <ion-range [value]="predictionCnt" min="1" max="20" pin snaps
+        (ionChange)="onChangePredictionCnt($event.target.value)" color="secondary">
+      </ion-range>
+    </ion-item>
+    <ion-list-header>Cut-off prediction percentage: {{predictionPct}}%</ion-list-header>
+    <ion-item>
+      <ion-range [value]="predictionPct" step="5" min="0" max="95" pin snaps
+        (ionChange)="onChangePredictionPct($event.target.value)" color="secondary">
+      </ion-range>
+    </ion-item>
+    <ion-list-header>Image from device storage</ion-list-header>
+    <ion-item>
+      <ion-label>Allow editing</ion-label>
+      <ion-checkbox color="secondary" slot="end" (ionChange)="onChangeAllowsEditing($event.target.checked)"
+      [checked]="allowsEditing"></ion-checkbox>
+    </ion-item>
+  </ion-list>
+</ion-content>

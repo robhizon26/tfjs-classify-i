@@ -1,0 +1,64 @@
+<ion-app>
+  <ion-header translucent="true" mode="ios">
+    <ion-toolbar>
+      <ion-title>
+        <div *ngIf="model">{{savedModel.name}}</div>
+        <div *ngIf="!model">TFJS Classify I</div>
+      </ion-title>
+    </ion-toolbar>
+  </ion-header>
+  <ion-content>
+    <div *ngIf="screenStatus!=='photo'" style="text-align:center;overflow-y: hidden "  
+      [ngStyle]="{'max-height': videoElemPct.height }">
+      <video style="background-color: white;border: 1px solid rgb(39, 15, 145);"
+         height="auto" width="100%"
+        id="video"
+        (click)="onSelectVideoFrame()" autoplay="autoplay"  
+        poster="assets/loading.gif" loop></video>
+    </div>
+    <div *ngIf="screenStatus==='photo'" style="text-align:center; overflow-y: hidden; ">
+      <ion-img style="border:1px solid red" height="100%" width="100%" class="image" (click)="onSelectVideoFrame()"
+        [src]="selectedImage">
+      </ion-img>
+    </div>
+    <div style="height:100%;text-align:center;overflow-y: scroll;border-top: 2px solid gray; box-sizing: border-box;">
+      <ion-list>
+        <ion-item *ngFor="let prediction of predictions">
+          <ion-label style="width: 80%;">
+            <h2>{{prediction.className}}</h2>
+          </ion-label>
+          <ion-buttons slot="end">
+            <ion-button disabled>{{(prediction.probability*100).toFixed(2)}}%</ion-button>
+          </ion-buttons>
+        </ion-item>
+      </ion-list>
+    </div>
+    <ion-fab horizontal="end" vertical="top" slot="fixed" edge>
+      <ion-fab-button>
+        <ion-icon name="add"></ion-icon>
+      </ion-fab-button>
+      <ion-fab-list>
+        <ion-fab-button color="light" (click)="onChangeSetting()">
+          <ion-icon name="settings-outline"></ion-icon>
+        </ion-fab-button>
+        <ion-fab-button color="light" (click)="onAboutThisApp()">
+          <ion-icon name="information"></ion-icon>
+        </ion-fab-button>
+        <ion-fab-button color="light" (click)="onRefreshScreen()">
+          <ion-icon name="reload"></ion-icon>
+        </ion-fab-button>
+        <ion-fab-button color="light" (click)="onViewModels()">
+          <ion-icon name="list"></ion-icon>
+        </ion-fab-button>
+      </ion-fab-list>
+      <ion-fab-list side="start" *ngIf="hasRenderedImages">
+        <ion-fab-button color="light" (click)="onViewClasses()">
+          <ion-icon name="document-text-outline"></ion-icon>
+        </ion-fab-button>
+        <ion-fab-button color="light" (click)="onPickImage()">
+          <ion-icon name="image-outline"></ion-icon>
+        </ion-fab-button>
+      </ion-fab-list>
+    </ion-fab>
+  </ion-content>
+</ion-app>

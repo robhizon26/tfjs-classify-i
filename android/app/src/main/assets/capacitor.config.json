@@ -1,0 +1,13 @@
+{
+  "appId": "io.ionic.tfjsclassifyi",
+  "appName": "TFJS Classify I",
+  "bundledWebRuntime": false,
+  "npmClient": "npm",
+  "webDir": "www",
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 0
+    }
+  },
+  "cordova": {}
+}
