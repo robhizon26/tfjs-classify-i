@@ -1,7 +1,8 @@
 {
   "name": "tfjs-classify-i",
   "integrations": {
-    "capacitor": {}
+    "capacitor": {},
+    "cordova": {}
   },
   "type": "angular"
 }

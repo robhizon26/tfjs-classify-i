@@ -60,5 +60,15 @@
         </ion-fab-button>
       </ion-fab-list>
     </ion-fab>
+    <ion-fab *ngIf="screenStatus==='pause'" horizontal="start" vertical="start" slot="fixed">
+      <ion-fab-button color="warning" class="btn-floating pulse btn-small yellow">
+        <ion-icon name="pause-outline"></ion-icon>
+      </ion-fab-button>
+    </ion-fab>
+    <ion-fab *ngIf="screenStatus==='photo'" horizontal="start" vertical="start" slot="fixed">
+      <ion-fab-button color="light" class="btn-floating pulse btn-small light">
+        <ion-icon name="image-outline"></ion-icon>
+      </ion-fab-button>
+    </ion-fab>
   </ion-content>
 </ion-app>
