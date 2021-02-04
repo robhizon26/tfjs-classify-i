@@ -6,7 +6,7 @@ import {
   Plugins,
   Capacitor,
   CameraSource,
-  CameraResultType 
+  CameraResultType
 } from '@capacitor/core';
 import * as tf from '@tensorflow/tfjs'
 import { Prediction } from './models/predictions';
@@ -31,7 +31,7 @@ export class AppComponent implements OnInit {
   selectedImage: string = 'assets/ezgif.com-crop2.gif';
   context: any
   screenStatus: string = 'play'
-  waitTime: number = 500;
+  waitTime: number = 30;
   model: any;
   canvas: HTMLCanvasElement;
   videoElement: HTMLVideoElement;
@@ -272,23 +272,30 @@ export class AppComponent implements OnInit {
     let allowsEditing = true;
     const plgVl = await Plugins.Storage.get({ key: 'allowsEditing' });
     if (plgVl.value) allowsEditing = plgVl.value == 'true' ? true : false;
-    Plugins.Camera.getPhoto({
-      quality: 70,
-      source: CameraSource.Photos,
-      correctOrientation: true,
-      allowEditing: allowsEditing,
-      resultType: CameraResultType.Base64
-    })
-      .then(image => {
-        clearInterval(this.frameInterval);
-        this.selectedImage = 'data:image/jpeg;base64,' + image.base64String;
-        this.screenStatus = 'photo'
-        this.renderImages();
+
+    this.loadingCtrl.create({ message: 'Loading...' }).then(loadingEl => {
+      loadingEl.present();
+      Plugins.Camera.getPhoto({
+        quality: 50,
+        source: CameraSource.Photos,
+        correctOrientation: true,
+        allowEditing: allowsEditing,
+        resultType: CameraResultType.Base64
+      }).finally(() => {
+        loadingEl.dismiss();
       })
-      .catch(error => {
-        console.log(error);
-        return false;
-      });
+        .then(image => {
+          clearInterval(this.frameInterval);
+          this.selectedImage = 'data:image/jpeg;base64,' + image.base64String;
+          this.screenStatus = 'photo'
+          loadingEl.dismiss();
+          this.renderImages();
+        })
+        .catch(error => {
+          console.log(error);
+          return false;
+        });
+    });
   }
 
   async renderImages() {
@@ -319,21 +326,19 @@ export class AppComponent implements OnInit {
       setTimeout(() => {
         this.doPredictions(pixelsCropped)
         if (this.screenStatus === 'play') requestAnimationFrame(() => this.renderImages());
-      }, 500)
+      }, this.waitTime * 20)
     }
     if (this.screenStatus === 'photo') {
+      console.log('screenStatus === photo')
       img.src = this.selectedImage;
       let onloaded = false;
-      img.onload = () => {
+      img.onload = async () => {
         if (!onloaded) {
           this.imageDim = [img.width, img.height];
           this.resizeByCanvas(img, img.width, img.height, padding);
           img.src = this.canvas.toDataURL();
-          if (!onloaded)
-            setTimeout(() => {
-              console.log('async renderImages photo pause')
-              this.doPredictions(img)
-            }, 500);
+          console.log('async renderImages photo pause')
+          await this.doPredictions(img)
         }
         onloaded = true;
       }
@@ -355,12 +360,13 @@ export class AppComponent implements OnInit {
     this.context.drawImage(img, beginWidth, beginHeight, VIDEO_PIXELS, VIDEO_PIXELS, 0, 0, this.savedModel.info.dim, this.savedModel.info.dim);
   }
 
-  doPredictions(img) {
-    const result = tf.tidy(() => {
+  private doPredictions(img) {
+    let result = tf.tidy(() => {
       this.model.classify(img, this.predictionCnt).then(predictions => {
-        this.predictions = predictions.filter(prediction => prediction.probability * 100 >= this.predictionPct)
+        this.predictions = predictions.filter(prediction => prediction.probability * 100 >= this.predictionPct);
       });
     });
+    result = null;
   }
 
   async showToast(message) {

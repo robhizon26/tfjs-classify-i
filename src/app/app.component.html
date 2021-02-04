@@ -17,7 +17,7 @@
         poster="assets/loading.gif" loop></video>
     </div>
     <div *ngIf="screenStatus==='photo'" style="text-align:center; overflow-y: hidden; ">
-      <ion-img style="border:1px solid red" height="100%" width="100%" class="image" (click)="onSelectVideoFrame()"
+      <ion-img style="border:1px solid #808080" height="100%" width="100%" class="image" (click)="onSelectVideoFrame()"
         [src]="selectedImage">
       </ion-img>
     </div>
@@ -32,6 +32,7 @@
           </ion-buttons>
         </ion-item>
       </ion-list>
+      <canvas id="canvas" style="display: none;" ></canvas>
     </div>
     <ion-fab horizontal="end" vertical="top" slot="fixed" edge>
       <ion-fab-button>

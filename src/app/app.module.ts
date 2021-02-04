@@ -13,11 +13,12 @@ import { ClassesComponent } from './modals/classes/classes.component';
 import { AboutComponent } from './modals/about/about.component';
 import { ModelsComponent } from './modals/models/models.component';
 import { NgxImageCompressService } from "ngx-image-compress";
+import { SettingsComponent } from './modals/settings/settings.component';
 
 @NgModule({
-  declarations: [AppComponent, ClassesComponent, AboutComponent,ModelsComponent],
-  entryComponents: [ClassesComponent,AboutComponent,ModelsComponent],
-  imports: [BrowserModule, IonicModule.forRoot(), HttpClientModule, CommonModule],
+  declarations: [AppComponent, ClassesComponent, AboutComponent, ModelsComponent, SettingsComponent],
+  entryComponents: [ClassesComponent, AboutComponent, ModelsComponent],
+  imports: [BrowserModule, IonicModule, IonicModule.forRoot(), HttpClientModule, CommonModule],
   providers: [
     StatusBar,
     SplashScreen,

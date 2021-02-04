@@ -1,5 +1,4 @@
 nsfw/model_flat
-nsfw_model_flat_
 nsfw/quant_mid
 nsfw/quant_mobilenet
 nsfw/etc/quant_mobilenet
@@ -7,5 +6,6 @@ nsfw/etc/quant_mobilenet
 flowers/flowers_mobn_ft
 flowers/flowers_mobn_ftda
 
-usdbills/usdff
+usdbills/usdsqr_mobn_ft
+usdbills/usdsqr_mobn_ftda
  
