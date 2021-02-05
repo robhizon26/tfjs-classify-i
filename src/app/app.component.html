@@ -8,13 +8,10 @@
     </ion-toolbar>
   </ion-header>
   <ion-content>
-    <div *ngIf="screenStatus!=='photo'" style="text-align:center;overflow-y: hidden "  
+    <div *ngIf="screenStatus!=='photo'" style="text-align:center;overflow-y: hidden "
       [ngStyle]="{'max-height': videoElemPct.height }">
-      <video style="background-color: white;border: 1px solid rgb(39, 15, 145);"
-         height="auto" width="100%"
-        id="video"
-        (click)="onSelectVideoFrame()" autoplay="autoplay"  
-        poster="assets/loading.gif" loop></video>
+      <video style="background-color: white;border: 1px solid rgb(39, 15, 145);" height="auto" width="100%" id="video"
+        (click)="onSelectVideoFrame()" autoplay="autoplay" poster="assets/loading.gif" loop></video>
     </div>
     <div *ngIf="screenStatus==='photo'" style="text-align:center; overflow-y: hidden; ">
       <ion-img style="border:1px solid #808080" height="100%" width="100%" class="image" (click)="onSelectVideoFrame()"
@@ -23,16 +20,18 @@
     </div>
     <div style="height:100%;text-align:center;overflow-y: scroll;border-top: 2px solid gray; box-sizing: border-box;">
       <ion-list>
-        <ion-item *ngFor="let prediction of predictions">
+        <ion-item *ngFor="let prediction of newpredictions">
           <ion-label style="width: 80%;">
             <h2>{{prediction.className}}</h2>
           </ion-label>
           <ion-buttons slot="end">
-            <ion-button disabled>{{(prediction.probability*100).toFixed(2)}}%</ion-button>
+            <ion-label color="medium">
+              <h2>{{(prediction.probability*100).toFixed(2)}}%</h2>
+            </ion-label>
           </ion-buttons>
         </ion-item>
       </ion-list>
-      <canvas id="canvas" style="display: none;" ></canvas>
+      <canvas id="canvas" style="display: none;"></canvas>
     </div>
     <ion-fab horizontal="end" vertical="top" slot="fixed" edge>
       <ion-fab-button>

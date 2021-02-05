@@ -26,7 +26,7 @@ import { NgxImageCompressService } from "ngx-image-compress";
 })
 
 export class AppComponent implements OnInit {
-  predictions: Prediction[] = [];
+  newpredictions: Prediction[] = [];
   hasListDetail: boolean = false;
   selectedImage: string = 'assets/ezgif.com-crop2.gif';
   context: any
@@ -99,7 +99,7 @@ export class AppComponent implements OnInit {
         } catch (error) {
           this.showAlert('Error', error)
         }
-        this.predictions = [];
+        this.newpredictions = [];
         this.initializedScreen()
         if (loadingEl) loadingEl.dismiss()
       }
@@ -298,47 +298,49 @@ export class AppComponent implements OnInit {
     });
   }
 
-  async renderImages() {
+  private renderImages() {
     this.hasRenderedImages = true;
-    const img = new Image()
-    img.crossOrigin = 'anonymous';
     const padding = 0.1;//10% padding on each side
     if (this.videoElement && (this.screenStatus === 'play' || this.screenStatus === 'pause')) {
-      const pixels = tf.browser.fromPixels(this.videoElement);
-      const width = this.videoElement.videoWidth;
-      const height = this.videoElement.videoHeight
-      let newheight = this.videoElement.videoHeight;
-      let newheightneglee = 0;
-      if (height > width) {
-        newheight = width;
-        newheightneglee = height - width * 1.2;
-        this.videoElemPct.height = (width * 80 / height).toFixed(0) + '%'
-      }
-      const paddedWidth = width * (1 - padding);
-      const paddedHeight = newheight * (1 - padding);
-      let VIDEO_PIXELS = paddedWidth < paddedHeight ? paddedWidth : paddedHeight;
-      const centerWidth = width / 2;
-      const centerHeight = (height / 2) - newheightneglee;
-      const beginWidth = centerWidth - (VIDEO_PIXELS / 2);
-      const beginHeight = centerHeight - (VIDEO_PIXELS / 2);
-      const pixelsCropped = pixels.slice([beginHeight, beginWidth, 0], [VIDEO_PIXELS, VIDEO_PIXELS, 3]);
-
       setTimeout(() => {
-        this.doPredictions(pixelsCropped)
-        if (this.screenStatus === 'play') requestAnimationFrame(() => this.renderImages());
-      }, this.waitTime * 20)
+        tf.tidy(() => {
+          const pixels = tf.browser.fromPixels(this.videoElement);
+          const width = this.videoElement.videoWidth;
+          const height = this.videoElement.videoHeight
+          let newheight = this.videoElement.videoHeight;
+          let newheightneglee = 0;
+          if (height > width) {
+            newheight = width;
+            newheightneglee = height - width * 1.2;
+            this.videoElemPct.height = (width * 80 / height).toFixed(0) + '%'
+          }
+          const paddedWidth = width * (1 - padding);
+          const paddedHeight = newheight * (1 - padding);
+          let VIDEO_PIXELS = paddedWidth < paddedHeight ? paddedWidth : paddedHeight;
+          const centerWidth = width / 2;
+          const centerHeight = (height / 2) - newheightneglee;
+          const beginWidth = centerWidth - (VIDEO_PIXELS / 2);
+          const beginHeight = centerHeight - (VIDEO_PIXELS / 2);
+          const pixelsCropped = pixels.slice([beginHeight, beginWidth, 0], [VIDEO_PIXELS, VIDEO_PIXELS, 3]);
+
+          this.doPredictions(pixelsCropped)
+          if (this.screenStatus === 'play') requestAnimationFrame(() => this.renderImages());
+        });
+      }, this.waitTime * 20);
     }
     if (this.screenStatus === 'photo') {
       console.log('screenStatus === photo')
+      const img = new Image()
+      img.crossOrigin = 'anonymous';
       img.src = this.selectedImage;
       let onloaded = false;
-      img.onload = async () => {
+      img.onload = () => {
         if (!onloaded) {
           this.imageDim = [img.width, img.height];
           this.resizeByCanvas(img, img.width, img.height, padding);
           img.src = this.canvas.toDataURL();
           console.log('async renderImages photo pause')
-          await this.doPredictions(img)
+          this.doPredictions(img)
         }
         onloaded = true;
       }
@@ -361,12 +363,9 @@ export class AppComponent implements OnInit {
   }
 
   private doPredictions(img) {
-    let result = tf.tidy(() => {
-      this.model.classify(img, this.predictionCnt).then(predictions => {
-        this.predictions = predictions.filter(prediction => prediction.probability * 100 >= this.predictionPct);
-      });
+    this.model.classify(img, this.predictionCnt).then(predictions => {
+      this.newpredictions = predictions.filter(prediction => prediction.probability * 100 >= this.predictionPct);
     });
-    result = null;
   }
 
   async showToast(message) {

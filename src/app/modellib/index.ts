@@ -60,7 +60,6 @@ export class ModelLib {
   async load() {
     const { size, type, labels } = this.options;
     this.labels = labels;
-    console.log('load  this.labels ', this.labels)
     if (type === "graph") {
       this.model = await tf.loadGraphModel(this.pathOrIOHandler);
     } else {
