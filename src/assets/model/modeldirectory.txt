@@ -9,3 +9,4 @@ flowers/flowers_mobn_ftda
 usdbills/usdsqr_mobn_ft
 usdbills/usdsqr_mobn_ftda
  
+usdsqr_mobn_test

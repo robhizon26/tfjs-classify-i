@@ -167,9 +167,7 @@ export class ModelLib {
     topk = 5
   ): Promise<Array<{ className: string; probability: number }>> {
     const logits = this.infer(img) as tf.Tensor2D;
-    topk = 7
     const classes = await getTopKClasses(logits, topk, this.labels);
-
     logits.dispose();
     return classes;
   }
@@ -193,7 +191,7 @@ async function getTopKClasses(
   let maxvalue = valuesAndIndices[0].value;
   let minvalue = valuesAndIndices[valuesAndIndices.length - 1].value;
   let total = 0;
-  // if (false)
+
   if (maxvalue >= 1 || minvalue <= 0) {
     valuesAndIndices = valuesAndIndices.map(item => {
       item.value -= minvalue;

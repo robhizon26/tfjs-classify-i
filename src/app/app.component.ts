@@ -363,7 +363,9 @@ export class AppComponent implements OnInit {
   }
 
   private doPredictions(img) {
+    console.log('doPredictions this.predictionCnt',this.predictionCnt)
     this.model.classify(img, this.predictionCnt).then(predictions => {
+      console.log('doPredictions predictions',predictions)
       this.newpredictions = predictions.filter(prediction => prediction.probability * 100 >= this.predictionPct);
     });
   }
