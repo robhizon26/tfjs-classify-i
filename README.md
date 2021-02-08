@@ -8,10 +8,8 @@
 3) Register your model paths in modeldirectory.txt.
 >This app has sample loaded models so it is easy for you to follow.
 
-.
 ![](others/images/modeldirectory.jpg)
-##### *The image on the left shows where to drop your model files in the app. It's on Visual Studio Code. The image on the right is the model list modal where you can see your list of models in the app. This is also where you can choose a model to load. This also shows that the list here is the same as the list of models you register in modeldirectory.txt.* 
-.
+
 ## How to run this project in the browser
  You can run *ng serve* or *npm start* to run the app on the browser.
 ## How to run this project on device
@@ -31,16 +29,16 @@ You can run on the terminal window *npm run build* and some of the capacitor cli
 
 *ionic capacitor run ios* or *ionic capacitor run android* will just run all of capacitor cli commands mentioned above. So you can just solely use this one on any creation or update of ios and android folders.
 
+.
 ## How to use the app
 1) On the first time running this app on your device, it will not load any model and your camera view is off. First, you need to open the model list modal and choose your model to load.
 2) Upon loading the model, the app will ask various permissions at the time of opening the camera view (or webcam if you are using a desktop browser) or getting photos from your phone storage (or hard disk if you are using a desktop browser ). Please allow to do so.
 3) Initially, the camera view is streaming and the prediction list will appear at the bottom of the screen. If you want a still image from the camera view, just tap the screen and it will pause. Tap it again and it will resume streaming.
-
 ![](others/images/stillimages.jpg)
  
 4) You can infer photo from the device storage by clicking on image icon FAB (floating action button). Once photo is loaded and predictions listed, you can go back to camera view by tapping the screen.
 ![](others/images/getphoto.jpg)
-##### *The image on the left shows that you are about to get photo from the device storage. The image in the middle shows that you can edit/crop your photo prior to loading to the canvas of the app. Image editor will only appear if you checked `Allow Editing` in the Setting options. The image on the right is the loaded photo on the screen canvas of the app along with the predictions at the bottom of the screen.* 
+
 .
 ### What are the options in the Settings modal
 1) **Number of predictions** - Ranges from 1 to 20. This will limit the number of prediction list items. If you set this setting higher than the number of classes, of course, the maximum number of prediction items will be the number of classes.
@@ -67,13 +65,9 @@ You can run on the terminal window *npm run build* and some of the capacitor cli
  This will allow you get and load a photo from the device storage.
 
 .
-![](others/images/SettingsFABsClasses.jpg)
-##### *The image on the left shows the Settings modal screen. The image in the middle shows the FAB menu list expanded. The image on the right is the Classes modal screen.*
+![](others/images/SettingsFABsClasses.jpg) 
 .
 ![](others/images/ModelsInfoAbout.jpg)
-##### *The image on the left shows you the options when you tap a model on the list. You can either load a new model for the app, get its info, or view its classes. The image in the middle shows you a dialog of the model info when you choose that optoin from the bottomsheet. The image on the right shows you the currently loaded model info from the About modal screen. It also shows the HTMLVideoElement dimension that is detected from the capacitor wrapper browser that basically relies on the device screen dimension.*
 .
- 
-
 ## Other related links
 If you want TFJS image classification model maker, please check [this out](https://robhizon26.medium.com/tfjs-model-maker-using-google-colab-and-google-drive-4406cba52436). This will create binary weight(group1-shard1of2.bin, group1-shard1of3.bin…), model.json, and labels.txt files.
