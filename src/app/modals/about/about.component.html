@@ -8,50 +8,32 @@
 </ion-header>
 <ion-content fullscreen class="ion-padding">
   <ion-text color="medium">
-    <h5>This mobile app is made from Ionic that can test out graph or keras model files without modifying anything on
-      the
-      code. Just copy the model files in the particular path in the code, run and compile it in Android studio (or XCode
-      if you compile this for iOS) and you will be able to test it out on your mobile device.</h5>
+    <h5>This is a mobile app made from Ionic that can test out TFJS model files without modifying anything on the code. Just copy the model files on a particular path, run and build it, create the Android (or iOS) project, and run it on Android studio (or XCode) and you will be able to test it out on your mobile device.</h5>
   </ion-text>
   <ion-text color="medium">
-    <h5>Ionic is a mobile development technology that can maintain one codebase for a project that is applicable on both
-      Android and iOS. TFJS (Tensorflow for Javascript) is very much compatible with this technology because it is made
-      for Javascript coding.</h5>
+    <h5>Ionic is a mobile development technology that can maintain one codebase for a project that is applicable on both Android and iOS. TFJS (Tensorflow for Javascript) is very much compatible with this technology because it is made for Javascript coding.</h5>
   </ion-text>
   <ion-text color="medium">
-    <h5>The app name 'TFJS Classify I' means TFJS-Tensorflow JS(Javascript); Classify-Image Classifiction, which is a
-      type of deep learning application on AI; I-Ionic.</h5>
+    <h5>The app name 'TFJS Classify I' means TFJS-Tensorflow JS(Javascript); Classify-Image Classifiction, which is a type of deep learning application on AI; I-Ionic.</h5>
   </ion-text>
   <ion-text color="medium">
-    <h5>The camera view used on this app is not directly from native camera of the device but from the video that is fed
-      to the HTMLVideoElement from the native camera.</h5>
+    <h5>The camera view used on this app is not directly from native camera of the device but from the video that is fed to the HTMLVideoElement from the native camera.</h5>
   </ion-text>
   <ion-text color="medium">
-    <h5>If you want to know more about the details of this app, such as to what path should the model files be
-      copied, you could go <ion-text color="primary"><a href="https://github.com/robhizon26/tfjs-classify-i">here</a>.
+    <h5>If you want to know more about the details of this app, such as to what path should the model files be copied, you could go <ion-text color="primary"><a href="https://github.com/robhizon26/tfjs-classify-i">here</a>.
       </ion-text>
     </h5>
   </ion-text>
   <ion-text color="medium">
-    <h5>If you want to generate graph or keras model files, I made a simple script for Google colab to makes these files
-      <ion-text color="primary"><a
+    <h5>If you want to generate TFJS web-format model files, I made a simple script on Google Colab to make these files <ion-text color="primary"><a
           href="https://colab.research.google.com/drive/1UYS98ACTwM3a2sHQLQlO8IHOBMTFFYmp">here</a></ion-text> and
       the blog <ion-text color="primary"><a
           href="https://robhizon26.medium.com/tfjs-model-maker-using-google-colab-and-google-drive-4406cba52436">here</a>
-      </ion-text>. It
-      will generate these model files (binary weight and model.json files) plus a labels.txt file in your Google Drive.
+      </ion-text>. It will generate these model files (binary weight and model.json files) plus a labels.txt file on your Google Drive.
     </h5>
   </ion-text>
   <ion-text color="medium">
-    <h5>The app already contains several of the model files I created found in that particular path. You could also see
-      these
-      on the model list menu in the app. If you have your own model please make sure it is a graph or keras model. Also,
-      please add labels.txt into it. Follow the procedure on the description blog on how to create labels.txt.</h5>
-  </ion-text>
-  <ion-text color="medium">
-    <h5>If you want to test out .tflite models very easily without coding then you may try my expanded version of TFL
-      Classify Android app <ion-text color="primary"><a
-          href="https://myportfolio-061919.s3.us-east-2.amazonaws.com/UnderConstruction.html">here</a></ion-text>.</h5>
+    <h5>The app already contains several of the model files I created found in that particular path. You could also see the list on the Model modal screen in the app.</h5>
   </ion-text>
   <br *ngIf="model">
   <ion-card *ngIf="model">
@@ -96,7 +78,7 @@
   <ion-card>
     <ion-card-content class="ion-text-center">
       <a href="https://www.paypal.com/donate/?cmd=_donations&business=49V38B35ARHB6&currency_code=USD&Z3JncnB0="> <img
-          src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif" alt="Donate with PayPal button" /></a>
+          src="assets/btn_donateCC_LG.gif" alt="Donate with PayPal button" /></a>
       <h6>Consider donating to Paypal <ion-icon name="logo-paypal"></ion-icon> if you appreciate the effort on
         creating this app</h6>
     </ion-card-content>
