@@ -12,7 +12,7 @@
 ## How to run this project in the browser
  You can run *ng serve* or *npm start* to run the app on the browser.
 ## How to run this project on device
-This project uses capacitor as its wrapper and mini web hosting server to creating native app, and its bridge to integrating to native API SDK such as the Camera and File Manager for accessing your photos. 
+This project uses capacitor as its wrapper and mini web hosting server to creating native app, and its bridge to integrating to native API SDK such as the camera and device storage for accessing your photos. And since you have this mini web hosting server built-in in capacitor, you won't have to deal anymore with deploying the web app in a backend/remote server.
 
 Once you've cloned or downloaded this project you may also build it in iOS if you prefer that platform. I build this app using Windows so I can only create android folder.
 
