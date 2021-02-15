@@ -12,7 +12,6 @@ import { CommonModule } from '@angular/common';
 import { ClassesComponent } from './modals/classes/classes.component';
 import { AboutComponent } from './modals/about/about.component';
 import { ModelsComponent } from './modals/models/models.component';
-import { NgxImageCompressService } from "ngx-image-compress";
 import { SettingsComponent } from './modals/settings/settings.component';
 
 @NgModule({
@@ -22,8 +21,7 @@ import { SettingsComponent } from './modals/settings/settings.component';
   providers: [
     StatusBar,
     SplashScreen,
-    { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
-    NgxImageCompressService
+    { provide: RouteReuseStrategy, useClass: IonicRouteStrategy } 
   ],
   bootstrap: [AppComponent],
 })
