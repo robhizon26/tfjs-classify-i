@@ -74,7 +74,8 @@ export class ModelsComponent implements OnInit {
               text: 'View classes',
               handler: async () => {
                 const fullmodelpath = 'assets/model/' + model.path + '/' + model.name + '/'
-                const plabels = await this.httpClient.get(fullmodelpath + 'labels.txt', { responseType: 'text' }).toPromise();
+                let modelpath = fullmodelpath.replace("//", "/");
+                const plabels = await this.httpClient.get(modelpath + 'labels.txt', { responseType: 'text' }).toPromise();
                 const labels = createLabelsClass(plabels);
                 this.modalCtrl.create({
                   component: ClassesComponent,
