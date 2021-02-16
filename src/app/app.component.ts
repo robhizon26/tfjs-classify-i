@@ -67,9 +67,7 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit() {
     this.platform.ready().then(async () => {
-      if (this.isOnDevice) {
-        this.preInitializedScreen(null);
-      }
+      this.preInitializedScreen(null);
     });
   }
 
