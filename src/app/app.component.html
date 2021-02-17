@@ -8,7 +8,7 @@
     </ion-toolbar>
   </ion-header>
   <ion-content>
-    <div *ngIf="screenStatus!=='photo'" style="text-align:center;overflow-y: hidden "
+    <div *ngIf="screenStatus!=='photo'" style="text-align:center;overflow-y: hidden"
       [ngStyle]="{'max-height': videoElemPct.height }">
       <video style="background-color: white;border: 1px solid rgb(39, 15, 145);" height="auto" width="100%"
         (click)="onSelectVideoFrame()" autoplay="autoplay" poster="assets/loading.gif" loop #video></video>

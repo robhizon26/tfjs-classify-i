@@ -1,12 +1,12 @@
 import { Component, ViewChild, ElementRef, AfterViewInit, OnInit } from "@angular/core";
-import { AlertController, LoadingController, ModalController, Platform, ToastController } from "@ionic/angular";
+import { AlertController, LoadingController, ModalController, Platform } from "@ionic/angular";
 import { SplashScreen } from "@ionic-native/splash-screen/ngx";
 import { StatusBar } from "@ionic-native/status-bar/ngx";
 import { Plugins, Capacitor, CameraSource, CameraResultType, } from "@capacitor/core";
-import * as tf from "@tensorflow/tfjs";
-import { Prediction } from "./models/predictions";
-import * as modellib from "./modellib";
 import { HttpClient } from "@angular/common/http";
+import * as tf from "@tensorflow/tfjs";
+import * as modellib from "./modellib";
+import { Prediction } from "./models/predictions";
 import { SettingsComponent } from "./modals/settings/settings.component";
 import { ClassesComponent } from "./modals/classes/classes.component";
 import { AboutComponent } from "./modals/about/about.component";
@@ -25,7 +25,6 @@ export class AppComponent implements OnInit, AfterViewInit {
   videoElement: HTMLVideoElement;
 
   newpredictions: Prediction[] = [];
-  hasListDetail: boolean = false;
   selectedImage: string = "assets/ezgif.com-crop2.gif";
   context: any;
   screenStatus: string = "play";
@@ -34,7 +33,6 @@ export class AppComponent implements OnInit, AfterViewInit {
   labels: { [classId: number]: string };
   predictionCnt: number = 5;
   predictionPct: number = 0;
-  frameInterval: any;
   hasRenderedImages: boolean = false;
   videoDim: any[] = [];
   savedModel: any;
@@ -47,7 +45,6 @@ export class AppComponent implements OnInit, AfterViewInit {
     private platform: Platform,
     private splashScreen: SplashScreen,
     private statusBar: StatusBar,
-    private toastController: ToastController,
     private httpClient: HttpClient,
     private modalCtrl: ModalController,
     private alertCtrl: AlertController,
@@ -68,6 +65,13 @@ export class AppComponent implements OnInit, AfterViewInit {
   ngAfterViewInit() {
     this.platform.ready().then(async () => {
       this.preInitializedScreen(null);
+    });
+  }
+
+  private initializeApp() {
+    this.platform.ready().then(() => {
+      this.statusBar.styleDefault();
+      this.splashScreen.hide();
     });
   }
 
@@ -99,11 +103,232 @@ export class AppComponent implements OnInit, AfterViewInit {
         } catch (error) {
           this.showAlert("Error", error);
         }
-        this.newpredictions = [];
         this.initializedScreen();
         if (loadingEl) loadingEl.dismiss();
       }
     }
+  }
+
+  private initializedScreen() {
+    this.hasRenderedImages = false;
+    this.newpredictions = [];
+    this.canvasElement = this.canvas.nativeElement;
+    if (this.context) {
+      this.context = this.canvasElement.getContext("2d");
+      this.context.clearRect(0, 0, this.canvasElement.width, this.canvasElement.height);
+    }
+    setTimeout(async () => {
+      let plgVl = await Plugins.Storage.get({ key: "predictionCnt" });
+      if (plgVl.value) this.predictionCnt = parseInt(plgVl.value);
+      plgVl = await Plugins.Storage.get({ key: "predictionPct" });
+      if (plgVl.value) this.predictionPct = parseInt(plgVl.value);
+      if (this.screenStatus == "play") await this.loadVideo();
+      this.renderImages();
+    }, this.waitTime);
+  }
+
+  private async loadVideo() {
+    await this.setupCamera();
+    this.videoElement.play();
+  }
+
+  private async setupCamera() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      this.showAlert("Error", "Browser API navigator.mediaDevices.getUserMedia not available");
+    }
+    this.videoElement = this.video.nativeElement;
+    // Get access to the camera!
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      // Not adding `{ audio: true }` since we only want video now
+      await navigator.mediaDevices
+        .getUserMedia({
+          video: {
+            facingMode: "environment",
+          },
+        })
+        .then((stream) => {
+          this.videoElement.srcObject = stream;
+        });
+    }
+
+    return new Promise((resolve) => {
+      this.videoElement.onloadedmetadata = () => {
+        this.videoDim = [this.videoElement.videoWidth, this.videoElement.videoHeight,];
+        resolve(this.videoDim);
+      };
+    });
+  }
+
+  private renderImages() {
+    this.hasRenderedImages = true;
+    const padding = 0.1; //10% padding on each side
+    setTimeout(() => {
+      if (this.videoElement && (this.screenStatus === "play" || this.screenStatus === "pause")) {
+        tf.tidy(() => {
+          const pixels = tf.browser.fromPixels(this.videoElement);
+          const width = this.videoElement.videoWidth;
+          const height = this.videoElement.videoHeight;
+          let newheight = this.videoElement.videoHeight;
+          let newheightneglee = 0;
+          if (height > width) {
+            newheight = width;
+            newheightneglee = height - width * 1.2;
+            this.videoElemPct.height = ((width * 80) / height).toFixed(0) + "%";
+          }
+          const paddedWidth = width * (1 - padding);
+          const paddedHeight = newheight * (1 - padding);
+          let VIDEO_PIXELS = paddedWidth < paddedHeight ? paddedWidth : paddedHeight;
+          const centerWidth = width / 2;
+          const centerHeight = height / 2 - newheightneglee;
+          const beginWidth = centerWidth - VIDEO_PIXELS / 2;
+          const beginHeight = centerHeight - VIDEO_PIXELS / 2;
+          const pixelsCropped = pixels.slice([beginHeight, beginWidth, 0], [VIDEO_PIXELS, VIDEO_PIXELS, 3]);
+
+          this.doPredictions(pixelsCropped);
+          if (this.screenStatus === "play") requestAnimationFrame(() => this.renderImages());
+        });
+      }
+      if (this.screenStatus === "photo") {
+        console.log("renderImages screenStatus === photo");
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.src = this.selectedImage;
+        img.onload = () => {
+          console.log("renderImages onload: photo");
+          this.doPredictions(img);
+        };
+      }
+    }, this.waitTime * 20);
+  }
+
+  private doPredictions(img) {
+    console.log("doPredictions this.predictionCnt", this.predictionCnt);
+    this.model.classify(img, this.predictionCnt).then((predictions) => {
+      console.log("doPredictions predictions", predictions);
+      this.newpredictions = predictions.filter((prediction) => prediction.probability * 100 >= this.predictionPct);
+    });
+  }
+
+  onSelectVideoFrame() {
+    if (!this.hasRenderedImages) return;
+    //toggle
+    if (this.screenStatus === "play") this.screenStatus = "pause";
+    else this.screenStatus = "play";
+    console.log('onSelectVideoFrame', this.screenStatus)
+    //set
+    if (this.screenStatus === "play") this.initializedScreen();
+    if (this.screenStatus === "pause") this.videoElement.pause();
+  }
+
+  async onPickImage() {
+    if (!Capacitor.isPluginAvailable("Camera")) {
+      return;
+    }
+    let allowsEditing = true;
+    const plgVl = await Plugins.Storage.get({ key: "allowsEditing" });
+    if (plgVl.value) allowsEditing = plgVl.value == "true" ? true : false;
+
+    this.loadingCtrl.create({ message: "Loading...", duration: 20000 }).then((loadingEl) => {
+      if (this.isOnDevice) loadingEl.present();
+      Plugins.Camera.getPhoto({
+        quality: 50,
+        source: CameraSource.Photos,
+        correctOrientation: true,
+        allowEditing: allowsEditing,
+        resultType: CameraResultType.Base64,
+      })
+        .finally(() => {
+          loadingEl.dismiss();
+        })
+        .then((image) => {
+          this.selectedImage = "data:image/jpeg;base64," + image.base64String;
+          this.screenStatus = "photo";
+          loadingEl.dismiss();
+          this.renderImages();
+        })
+        .catch((error) => {
+          console.log(error);
+          return false;
+        });
+    });
+  }
+
+  onChangeSetting() {
+    this.modalCtrl
+      .create({
+        component: SettingsComponent,
+        componentProps: { screenStatus: this.screenStatus },
+      })
+      .then((modalEl) => {
+        modalEl.onDidDismiss().then((modalData) => {
+          if (!modalData.data) { return; }
+          this.screenStatus = modalData.data.screenStatus;
+          if (modalData.data.hasChanged) this.initializedScreen();
+          else this.renderImages();
+        });
+        modalEl.present();
+        this.screenStatus = "pause";
+      });
+  }
+
+  onViewClasses() {
+    this.modalCtrl
+      .create({
+        component: ClassesComponent,
+        componentProps: {
+          screenStatus: this.screenStatus,
+          xLabels: JSON.stringify(this.labels),
+        },
+      })
+      .then((modalEl) => {
+        modalEl.onDidDismiss().then((modalData) => {
+          if (!modalData.data) { return; }
+          this.screenStatus = modalData.data.screenStatus;
+          this.renderImages();
+        });
+        modalEl.present();
+        this.screenStatus = "pause";
+      });
+  }
+
+  async onViewModels() {
+    this.loadingCtrl
+      .create({ message: "Loading..." })
+      .then(async (loadingEl) => {
+        if (this.aModels.length == 0) {
+          loadingEl.present();
+          await this.getModels();
+        }
+        loadingEl.dismiss();
+        this.modalCtrl
+          .create({
+            component: ModelsComponent,
+            componentProps: {
+              screenStatus: this.screenStatus,
+              model: JSON.stringify(this.savedModel),
+              amodel: JSON.stringify(this.aModels),
+            },
+          })
+          .then((modalEl) => {
+            modalEl.onDidDismiss().then((modalData) => {
+              const modeldata = modalData.data;
+              if (!modeldata) { return; }
+              this.screenStatus = modeldata.screenStatus;
+              if (modeldata.hasLoadNewModel) {
+                this.loadingCtrl
+                  .create({ message: "Loading..." })
+                  .then((loadingEl) => {
+                    loadingEl.present();
+                    this.preInitializedScreen(loadingEl);
+                  });
+              } else {
+                this.renderImages();
+              }
+            });
+            modalEl.present();
+            this.screenStatus = "pause";
+          });
+      });
   }
 
   private async getModels() {
@@ -173,10 +398,7 @@ export class AppComponent implements OnInit, AfterViewInit {
         for (var key in jsonvalue) {
           //check if graph format
           if (key.indexOf("format") > -1) {
-            format =
-              jsonvalue.format.indexOf("graph") > -1
-                ? "graph"
-                : jsonvalue.format;
+            format = jsonvalue.format.indexOf("graph") > -1 ? "graph" : jsonvalue.format;
             version = jsonvalue.generatedBy;
             let input = jsonvalue.userDefinedMetadata.signature.inputs;
             if (input) {
@@ -192,11 +414,8 @@ export class AppComponent implements OnInit, AfterViewInit {
           }
           //check if keras format
           if (key.indexOf("modelTopology") > -1) {
-            format = "keras";
-            version = jsonvalue.modelTopology.keras_version;
-            dim =
-              jsonvalue.modelTopology.model_config.config.layers[0].config
-                .batch_input_shape[1];
+            format = "keras"; version = jsonvalue.modelTopology.keras_version;
+            dim = jsonvalue.modelTopology.model_config.config.layers[0].config.batch_input_shape[1];
             break;
           }
         }
@@ -205,272 +424,6 @@ export class AppComponent implements OnInit, AfterViewInit {
     } catch {
       return null;
     }
-  }
-
-  private initializeApp() {
-    this.platform.ready().then(() => {
-      this.statusBar.styleDefault();
-      this.splashScreen.hide();
-    });
-  }
-
-  async loadVideo() {
-    await this.setupCamera();
-    this.videoElement.play();
-  }
-
-  async setupCamera() {
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      this.showAlert("Error", "Browser API navigator.mediaDevices.getUserMedia not available");
-    }
-    this.canvasElement = this.canvas.nativeElement;
-    this.videoElement = this.video.nativeElement;
-    // Get access to the camera!
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      // Not adding `{ audio: true }` since we only want video now
-      await navigator.mediaDevices
-        .getUserMedia({
-          video: {
-            facingMode: "environment",
-          },
-        })
-        .then((stream) => {
-          this.videoElement.srcObject = stream;
-        });
-    }
-
-    return new Promise((resolve) => {
-      this.videoElement.onloadedmetadata = () => {
-        this.videoDim = [
-          this.videoElement.videoWidth,
-          this.videoElement.videoHeight,
-        ];
-        resolve(this.videoDim);
-      };
-    });
-  }
-
-  initializedScreen() {
-    this.hasRenderedImages = false;
-    if (this.context) {
-      this.context = this.canvasElement.getContext("2d");
-      this.context.clearRect(
-        0,
-        0,
-        this.canvasElement.width,
-        this.canvasElement.height
-      );
-    }
-    setTimeout(async () => {
-      let plgVl = await Plugins.Storage.get({ key: "predictionCnt" });
-      if (plgVl.value) this.predictionCnt = parseInt(plgVl.value);
-      plgVl = await Plugins.Storage.get({ key: "predictionPct" });
-      if (plgVl.value) this.predictionPct = parseInt(plgVl.value);
-      if (this.screenStatus == "play") await this.loadVideo();
-      this.renderImages();
-    }, this.waitTime);
-  }
-
-  onSelectVideoFrame() {
-    if (!this.hasRenderedImages) return;
-    //toggle
-    if (this.screenStatus === "play") this.pauseVideo();
-    else if (this.screenStatus === "photo") {
-      this.screenStatus = "play";
-    } else if (this.screenStatus === "pause") this.screenStatus = "play";
-    //set
-    if (this.screenStatus === "play") this.initializedScreen();
-    if (this.screenStatus === "pause") {
-      this.videoElement.pause();
-    }
-  }
-
-  async onPickImage() {
-    if (!Capacitor.isPluginAvailable("Camera")) {
-      return;
-    }
-    let allowsEditing = true;
-    const plgVl = await Plugins.Storage.get({ key: "allowsEditing" });
-    if (plgVl.value) allowsEditing = plgVl.value == "true" ? true : false;
-
-    this.loadingCtrl.create({ message: "Loading...", duration: 20000 }).then((loadingEl) => {
-      if (this.isOnDevice) loadingEl.present();
-      Plugins.Camera.getPhoto({
-        quality: 50,
-        source: CameraSource.Photos,
-        correctOrientation: true,
-        allowEditing: allowsEditing,
-        resultType: CameraResultType.Base64,
-      })
-        .finally(() => {
-          loadingEl.dismiss();
-        })
-        .then((image) => {
-          clearInterval(this.frameInterval);
-          this.selectedImage = "data:image/jpeg;base64," + image.base64String;
-          this.screenStatus = "photo";
-          loadingEl.dismiss();
-          this.renderImages();
-        })
-        .catch((error) => {
-          console.log(error);
-          return false;
-        });
-    });
-  }
-
-  private renderImages() {
-    this.hasRenderedImages = true;
-    const padding = 0.1; //10% padding on each side
-    setTimeout(() => {
-      if (this.videoElement && (this.screenStatus === "play" || this.screenStatus === "pause")) {
-        tf.tidy(() => {
-          const pixels = tf.browser.fromPixels(this.videoElement);
-          const width = this.videoElement.videoWidth;
-          const height = this.videoElement.videoHeight;
-          let newheight = this.videoElement.videoHeight;
-          let newheightneglee = 0;
-          if (height > width) {
-            newheight = width;
-            newheightneglee = height - width * 1.2;
-            this.videoElemPct.height = ((width * 80) / height).toFixed(0) + "%";
-          }
-          const paddedWidth = width * (1 - padding);
-          const paddedHeight = newheight * (1 - padding);
-          let VIDEO_PIXELS = paddedWidth < paddedHeight ? paddedWidth : paddedHeight;
-          const centerWidth = width / 2;
-          const centerHeight = height / 2 - newheightneglee;
-          const beginWidth = centerWidth - VIDEO_PIXELS / 2;
-          const beginHeight = centerHeight - VIDEO_PIXELS / 2;
-          const pixelsCropped = pixels.slice(
-            [beginHeight, beginWidth, 0],
-            [VIDEO_PIXELS, VIDEO_PIXELS, 3]
-          );
-
-          this.doPredictions(pixelsCropped);
-          if (this.screenStatus === "play")
-            requestAnimationFrame(() => this.renderImages());
-        });
-      }
-      if (this.screenStatus === "photo") {
-        console.log("screenStatus === photo");
-        const img = new Image();
-        img.crossOrigin = "anonymous";
-        img.src = this.selectedImage;
-        let onloaded = false;
-        img.onload = () => {
-          if (!onloaded) {
-            console.log("async renderImages photo pause");
-            this.doPredictions(img);
-          }
-          onloaded = true;
-        };
-      }
-    }, this.waitTime * 20);
-  }
-
-  private doPredictions(img) {
-    console.log("doPredictions this.predictionCnt", this.predictionCnt);
-    this.model.classify(img, this.predictionCnt).then((predictions) => {
-      console.log("doPredictions predictions", predictions);
-      this.newpredictions = predictions.filter(
-        (prediction) => prediction.probability * 100 >= this.predictionPct
-      );
-    });
-  }
-
-  async showToast(message) {
-    const toast = await this.toastController.create({ message, duration: 20000 });
-    return await toast.present();
-  }
-
-  onChangeSetting() {
-    this.modalCtrl
-      .create({
-        component: SettingsComponent,
-        componentProps: { screenStatus: this.screenStatus },
-      })
-      .then((modalEl) => {
-        modalEl.onDidDismiss().then((modalData) => {
-          if (!modalData.data) {
-            return;
-          }
-          this.screenStatus = modalData.data.screenStatus;
-          if (modalData.data.hasChanged) this.initializedScreen();
-          else this.renderImages();
-        });
-        modalEl.present();
-        this.pauseVideo();
-      });
-  }
-
-  pauseVideo() {
-    this.screenStatus = "pause";
-    clearInterval(this.frameInterval);
-  }
-
-  onViewClasses() {
-    this.modalCtrl
-      .create({
-        component: ClassesComponent,
-        componentProps: {
-          screenStatus: this.screenStatus,
-          xLabels: JSON.stringify(this.labels),
-        },
-      })
-      .then((modalEl) => {
-        modalEl.onDidDismiss().then((modalData) => {
-          if (!modalData.data) {
-            return;
-          }
-          this.screenStatus = modalData.data.screenStatus;
-          this.renderImages();
-        });
-        modalEl.present();
-        this.pauseVideo();
-      });
-  }
-
-  async onViewModels() {
-    this.loadingCtrl
-      .create({ message: "Loading..." })
-      .then(async (loadingEl) => {
-        if (this.aModels.length == 0) {
-          loadingEl.present();
-          await this.getModels();
-        }
-        loadingEl.dismiss();
-        this.modalCtrl
-          .create({
-            component: ModelsComponent,
-            componentProps: {
-              screenStatus: this.screenStatus,
-              model: JSON.stringify(this.savedModel),
-              amodel: JSON.stringify(this.aModels),
-            },
-          })
-          .then((modalEl) => {
-            modalEl.onDidDismiss().then((modalData) => {
-              const modeldata = modalData.data;
-              if (!modeldata) {
-                return;
-              }
-              this.screenStatus = modeldata.screenStatus;
-              if (modeldata.hasLoadNewModel) {
-                this.loadingCtrl
-                  .create({ message: "Loading..." })
-                  .then((loadingEl) => {
-                    loadingEl.present();
-                    this.preInitializedScreen(loadingEl);
-                  });
-              } else {
-                this.renderImages();
-              }
-            });
-            modalEl.present();
-            this.pauseVideo();
-          });
-      });
   }
 
   onAboutThisApp() {
@@ -485,14 +438,12 @@ export class AppComponent implements OnInit, AfterViewInit {
       })
       .then((modalEl) => {
         modalEl.onDidDismiss().then((modalData) => {
-          if (!modalData.data) {
-            return;
-          }
+          if (!modalData.data) { return; }
           this.screenStatus = modalData.data.screenStatus;
           this.renderImages();
         });
         modalEl.present();
-        this.pauseVideo();
+        this.screenStatus = "pause";
       });
   }
 
