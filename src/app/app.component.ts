@@ -151,10 +151,10 @@ export class AppComponent implements OnInit, AfterViewInit {
         });
     }
 
-    return new Promise((resolve) => {
+    return new Promise<void>((resolve) => {
       this.videoElement.onloadedmetadata = () => {
         this.videoDim = [this.videoElement.videoWidth, this.videoElement.videoHeight,];
-        resolve(this.videoDim);
+        resolve();
       };
     });
   }
